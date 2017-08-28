@@ -7,6 +7,11 @@ alpine linux をベースにしているので本家よりもイメージサイ�
 
 なお、本家リポジトリには Kakadu のプロダクトが含まれていますが、本イメージには含まないようにしています。
 
+## サポートされているタグ
+
+- latest - loris (development branch)
+- 2.1.0 - loris (2.1.0)
+
 ## イメージの使い方
 
     $ docker run --rm -p 5004:5004 --name loris \
@@ -16,8 +21,8 @@ alpine linux をベースにしているので本家よりもイメージサイ�
 
 ### コンテナ上の各ファイル・フォルダ
 
-- /opt/loris/etc/loris2.conf - 設定ファイルを参照します。
 - /usr/local/share/images - 画像を参照します。
+- /etc/loris2/loris2.conf - 設定ファイルを参照します。
 - /var/cache/loris2 - Image API で加工された画像のキャッシュを保存します。
 
 ### Amazon S3 を使う場合
@@ -58,5 +63,5 @@ Amazon S3 を使う Resolver が組み込まれています。
 ## ライセンス
 このイメージに含まれるソフトウェアのライセンス情報は下記を参照ください。
 
-- [loris](https://github.com/loris-imageserver/loris/blob/development/LICENSE-Loris.txt)
+- [loris](https://github.com/loris-imageserver/loris/blob/v2.1.0-final/LICENSE-Loris.txt)
 - [openjpeg](https://github.com/uclouvain/openjpeg/blob/master/LICENSE)

@@ -5,8 +5,8 @@ ENV LANGUAGE=en_US:en \
     LANG=en_US.UTF-8 \
     LC_ALL=en_US.UTF-8
 
-ENV LORIS_VERSION=73d39f222af1a91ced5858c57faa890e116132fc \
-    LORIS_CHECKOUT=73d39f222af1a91ced5858c57faa890e116132fc
+ENV LORIS_VERSION=2.1.0 \
+    LORIS_CHECKOUT=refs/tags/v2.1.0-final
 
 COPY transforms.patch /
 COPY webapp.patch /

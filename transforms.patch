@@ -1,12 +1,42 @@
 diff --git loris/transforms.py loris/transforms.py
-index a3fadd6..010aae5 100644
+index 56185a3..5b334c5 100644
 --- loris/transforms.py
 +++ loris/transforms.py
-@@ -115,6 +115,7 @@ class _AbstractTransformer(object):
+@@ -115,21 +115,22 @@ class _AbstractTransformer(object):
+                 dither = Image.FLOYDSTEINBERG if self.dither_bitonal_images else Image.NONE
                  im = im.convert('1', dither=dither)
  
-         if image_request.format == 'jpg':
+-            if image_request.format == 'jpg':
+-                # see http://pillow.readthedocs.org/en/latest/handbook/image-file-formats.html#jpeg
+-                im.save(target_fp, quality=90)
+-
+-            elif image_request.format == 'png':
+-                # see http://pillow.readthedocs.org/en/latest/handbook/image-file-formats.html#png
+-                im.save(target_fp, optimize=True, bits=256)
+-
+-            elif image_request.format == 'gif':
+-                # see http://pillow.readthedocs.org/en/latest/handbook/image-file-formats.html#gif
+-                im.save(target_fp)
+-
+-            elif image_request.format == 'webp':
+-                # see http://pillow.readthedocs.org/en/latest/handbook/image-file-formats.html#webp
+-                im.save(target_fp, quality=90)
++        if image_request.format == 'jpg':
 +            if im.mode != "RGB": im = im.convert("RGB")
-             # see http://pillow.readthedocs.org/en/latest/handbook/image-file-formats.html#jpeg
-             im.save(target_fp, quality=90)
++            # see http://pillow.readthedocs.org/en/latest/handbook/image-file-formats.html#jpeg
++            im.save(target_fp, quality=90)
++
++        elif image_request.format == 'png':
++            # see http://pillow.readthedocs.org/en/latest/handbook/image-file-formats.html#png
++            im.save(target_fp, optimize=True, bits=256)
++
++        elif image_request.format == 'gif':
++            # see http://pillow.readthedocs.org/en/latest/handbook/image-file-formats.html#gif
++            im.save(target_fp)
++
++        elif image_request.format == 'webp':
++            # see http://pillow.readthedocs.org/en/latest/handbook/image-file-formats.html#webp
++            im.save(target_fp, quality=90)
  
+ class _PillowTransformer(_AbstractTransformer):
+     def __init__(self, config):
