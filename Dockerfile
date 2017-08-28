@@ -5,8 +5,12 @@ ENV LANGUAGE=en_US:en \
     LANG=en_US.UTF-8 \
     LC_ALL=en_US.UTF-8
 
+ENV LORIS_VERSION=73d39f222af1a91ced5858c57faa890e116132fc \
+    LORIS_CHECKOUT=73d39f222af1a91ced5858c57faa890e116132fc
+
 COPY transforms.patch /
 COPY webapp.patch /
+COPY src/s3resolver.py /
 
 RUN apk add --update --no-cache --virtual .build-deps \
         freetype-dev \
@@ -39,9 +43,12 @@ RUN apk add --update --no-cache --virtual .build-deps \
     && pip install Pillow \
     && pip install boto3 \
     \
-    && git clone --depth 1 https://github.com/loris-imageserver/loris.git /opt/loris \
+    && git clone https://github.com/loris-imageserver/loris.git /opt/loris \
+    && cd /opt/loris \
+    && git checkout ${LORIS_CHECKOUT} \
     && rm -rf /opt/loris/.git \
     && rm -rf /opt/loris/lib \
+    && rm /opt/loris/LICENSE-Kakadu.txt \
     \
     && mkdir -p /var/www/loris2 \
     && adduser -h /var/www/loris2 -s /bin/false -D loris \
@@ -56,13 +63,14 @@ RUN apk add --update --no-cache --virtual .build-deps \
     && patch -p0 -i transforms.patch \
     && patch -p0 -i webapp.patch \
     \
+    && mv /s3resolver.py /opt/loris/loris/ \
+    \
     && ./setup.py install \
     \
     && apk del .build-deps \
     && rm -rf /var/cache/apk/*
 
-COPY src/s3resolver.py /opt/loris/loris/
-COPY conf/loris2.conf /opt/loris/etc/loris2.conf
+COPY conf/loris2.conf /etc/loris2/
 
 WORKDIR /opt/loris/loris
 
