@@ -1,0 +1,12 @@
+diff --git loris/transforms.py loris/transforms.py
+index a3fadd6..010aae5 100644
+--- loris/transforms.py
++++ loris/transforms.py
+@@ -115,6 +115,7 @@ class _AbstractTransformer(object):
+                 im = im.convert('1', dither=dither)
+ 
+         if image_request.format == 'jpg':
++            if im.mode != "RGB": im = im.convert("RGB")
+             # see http://pillow.readthedocs.org/en/latest/handbook/image-file-formats.html#jpeg
+             im.save(target_fp, quality=90)
+ 

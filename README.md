@@ -2,45 +2,27 @@
 [Loris IIIF Image Server](https://github.com/loris-imageserver/loris) の docker コンテナです。
 
 Amazon S3 の API を利用する Resolver を同梱しているため、
-SimpleHTTPResolver などで対応できないケースでも S3 を利用する事ができます。
+SimpleHTTPResolver などで対応できないケースでも S3 を利用する事ができるほか、
+alpine linux をベースにしているので本家よりもイメージサイズが小さいです。
 
-## 例
+なお、本家リポジトリには Kakadu のプロダクトが含まれていますが、本イメージには含まないようにしています。
+
+## イメージの使い方
 
     $ docker run --rm -p 5004:5004 --name loris \
         -v /data/loris2/images:/usr/local/share/images \
         -v /data/loris2/cache/image:/var/cache/loris2 \
-        cosmicvelocity/loris:2.0.1-1
+        cosmicvelocity/loris:2.1.0
 
-## ドキュメント
+### コンテナ上の各ファイル・フォルダ
 
-### 使い方
-
-#### コンテナのビルド
-
-    git clone https://github.com/cosmicvelocity/docker-loris.git
-    cd docker-loris
-    git checkout 2.0.1-1
-    cd 2.0.1-1
-    docker build -t cosmicvelocity/loris:2.0.1-1 .
-
-#### コンテナ上の各フォルダ
-
+- /opt/loris/etc/loris2.conf - 設定ファイルを参照します。
 - /usr/local/share/images - 画像を参照します。
 - /var/cache/loris2 - Image API で加工された画像のキャッシュを保存します。
-
-#### コンテナの実行
-
-    $ docker run --rm -p 5004:5004 --name loris \
-        -v /data/loris2/images:/usr/local/share/images \
-        -v /data/loris2/cache/image:/var/cache/loris2 \
-        cosmicvelocity/loris:2.0.1-1
 
 ### Amazon S3 を使う場合
 
 Amazon S3 を使う Resolver が組み込まれています。
-利用する場合はバージョンフォルダ中の conf/loris2.conf を変更してビルドするか、
-ビルドしたイメージを利用する Dockerfile を作成してカスタマイズした loris2.conf を組み込みます。
-    
 組み込む場合は loris2.conf の [resolver] エントリを下記のように変更します。
     
     [resolver]
@@ -65,6 +47,13 @@ Amazon S3 を使う Resolver が組み込まれています。
 
     $ docker run --rm -p 5004:5004 --name loris \
         -v /data/images:/usr/local/share/images \
+        -v /data/loris2/conf/loris2.conf:/opt/loris/etc/loris2.conf \
         -v /data/loris2/cache/image:/var/cache/loris2 \
         -v /data/loris2/cache/s3:/var/cache/loris2-s3 \
-        cosmicvelocity/loris:2.0.1-1
+        cosmicvelocity/loris:2.1.0
+
+## ライセンス
+このイメージに含まれるソフトウェアのライセンス情報は下記を参照ください。
+
+- [loris](https://github.com/loris-imageserver/loris/blob/development/LICENSE-Loris.txt)
+- [openjpeg](https://github.com/uclouvain/openjpeg/blob/master/LICENSE)
