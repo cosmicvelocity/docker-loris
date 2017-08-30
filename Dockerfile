@@ -45,7 +45,7 @@ RUN apk add --update --no-cache --virtual .build-deps \
     \
     && git clone https://github.com/loris-imageserver/loris.git /opt/loris \
     && cd /opt/loris \
-    && git checkout ${LORIS_CHECKOUT} \
+    && git checkout --detach ${LORIS_CHECKOUT} \
     && rm -rf /opt/loris/.git \
     && rm -rf /opt/loris/lib \
     && rm /opt/loris/LICENSE-Kakadu.txt \

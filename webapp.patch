@@ -1,5 +1,5 @@
 diff --git loris/webapp.py loris/webapp.py
-index ab5818b..8306029 100755
+index ab5818b..3773956 100755
 --- loris/webapp.py
 +++ loris/webapp.py
 @@ -452,7 +452,7 @@ class Loris(object):
