@@ -14,7 +14,11 @@
 
 ## イメージの使い方
 
-    $ docker run --rm -p 5004:5004 -v /data/loris2/images:/usr/local/share/images cosmicvelocity/loris:latest
+    $ docker run --rm -p 5004:5004 cosmicvelocity/loris:latest
+
+起動後、ブラウザで下記にアクセスします。
+
+    http://[<Host or Container IP>]:5004/test.png/full/full/0/default.jpg
 
 ### コンテナ上の各ファイル・フォルダ
 - **/etc/loris2/loris2.conf**  
@@ -30,6 +34,10 @@
 
 - **/usr/local/share/images/loris**  
     SimpleHTTPResolver, TemplateHTTPResolver, S3Resolver を利用する場合、リモートの画像ファイルのキャッシュを保存するフォルダ。
+
+参照画像ファイルの配置フォルダを指定する際は下記のようになります。
+
+    $ docker run --rm -p 5004:5004 -v /data/loris2/images:/usr/local/share/images cosmicvelocity/loris:latest
 
 ### Amazon S3 を使う場合
 Amazon S3 を使う Resolver が組み込まれています。
@@ -58,12 +66,7 @@ Amazon S3 を使う Resolver が組み込まれています。
 
 #### コンテナの起動
 
-    $ docker run --rm -p 5004:5004 --name loris \
-        -v /data/images:/usr/local/share/images \
-        -v /data/loris2/conf/loris2.conf:/etc/loris2/loris2.conf \
-        -v /data/loris2/cache/image:/var/cache/loris2 \
-        -v /data/loris2/cache/s3:/usr/local/share/images/loris \
-        cosmicvelocity/loris:latest
+    $ docker run --rm -p 5004:5004 -v /data/images:/usr/local/share/images -v /data/loris2/conf/loris2.conf:/etc/loris2/loris2.conf -v /data/loris2/cache/image:/var/cache/loris2 -v /data/loris2/cache/s3:/usr/local/share/images/loris cosmicvelocity/loris:latest
 
 ## ライセンス
 このイメージに含まれるソフトウェアのライセンス情報は下記を参照ください。
