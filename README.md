@@ -1,12 +1,11 @@
 # docker-loris
 [Loris IIIF Image Server](https://github.com/loris-imageserver/loris) の docker イメージです。
 
-Amazon S3 の API を利用する Resolver を同梱しているため、
-SimpleHTTPResolver などで対応できないケースでも S3 を利用する事ができるほか、
-alpine linux をベースにしているので本家のイメージよりもサイズが小さいです。
+本家のイメージと比較して、下記の特徴があります。
 
-なお、本家リポジトリには Kakadu のプロダクトが含まれていますが、
-商用利用を考慮して本イメージには含まないように構築されています。
+- Alpine Linux をベースにしているため、イメージサイズが小さいです。
+- Amazon S3 API を利用する Resolver を同梱しています。
+- 商用利用を想定して構成しているため、Kakadu のプロダクトは除いてあります。
 
 ## サポートされているタグ
 
@@ -15,22 +14,27 @@ alpine linux をベースにしているので本家のイメージよりもサ�
 
 ## イメージの使い方
 
-    $ docker run --rm -p 5004:5004 --name loris \
-        -v /data/loris2/images:/usr/local/share/images \
-        -v /data/loris2/cache/image:/var/cache/loris2 \
-        cosmicvelocity/loris:2.1.0
+    $ docker run --rm -p 5004:5004 -v /data/loris2/images:/usr/local/share/images cosmicvelocity/loris:latest
 
 ### コンテナ上の各ファイル・フォルダ
+- **/etc/loris2/loris2.conf**  
+    Loris が参照する設定ファイルのパス。
 
-- /usr/local/share/images - 画像を参照します。
-- /etc/loris2/loris2.conf - 設定ファイルを参照します。
-- /var/cache/loris2 - Image API で加工された画像のキャッシュを保存します。
+- **/var/cache/loris2**  
+    Loris が IIIF Image API で加工された画像などのキャッシュを保存するフォルダ。
+
+下記は設定ファイルの設定によります。
+
+- **/usr/local/share/images**  
+    SimpleFSResolver を利用する場合、参照する画像ファイルの配置フォルダ。
+
+- **/usr/local/share/images/loris**  
+    SimpleHTTPResolver, TemplateHTTPResolver, S3Resolver を利用する場合、リモートの画像ファイルのキャッシュを保存するフォルダ。
 
 ### Amazon S3 を使う場合
-
 Amazon S3 を使う Resolver が組み込まれています。
 組み込む場合は loris2.conf の [resolver] エントリを下記のように変更します。
-    
+
     [resolver]
     impl = 's3resolver.S3Resolver'
     region_name = '【リージョン名】'
@@ -40,7 +44,7 @@ Amazon S3 を使う Resolver が組み込まれています。
     cache_dir = '【S3 から取得した画像のキャッシュディレクトリのパス】'
 
 ただし、試験的な実装になっているので、S3 上のファイルが更新されてもキャッシュが自動更新されない等、
-本番運用するには機能が不足しているので、ご注意ください。
+本番運用するには機能が不足しているので、その点ご注意ください。
     
 #### 設定例
 
@@ -50,7 +54,7 @@ Amazon S3 を使う Resolver が組み込まれています。
     aws_access_key_id = '....'
     aws_secret_access_key = '....'
     bucket_name = 'sample'
-    cache_dir = '/var/cache/loris2-s3'
+    cache_dir = '/usr/local/share/images/loris'
 
 #### コンテナの起動
 
@@ -58,8 +62,8 @@ Amazon S3 を使う Resolver が組み込まれています。
         -v /data/images:/usr/local/share/images \
         -v /data/loris2/conf/loris2.conf:/etc/loris2/loris2.conf \
         -v /data/loris2/cache/image:/var/cache/loris2 \
-        -v /data/loris2/cache/s3:/var/cache/loris2-s3 \
-        cosmicvelocity/loris:2.1.0
+        -v /data/loris2/cache/s3:/usr/local/share/images/loris \
+        cosmicvelocity/loris:latest
 
 ## ライセンス
 このイメージに含まれるソフトウェアのライセンス情報は下記を参照ください。
