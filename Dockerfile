@@ -72,6 +72,8 @@ RUN apk add --update --no-cache --virtual .build-deps \
 
 COPY conf/loris2.conf /etc/loris2/
 
+COPY loris2.conf /etc/loris2/
+
 WORKDIR /opt/loris/loris
 
 EXPOSE 5004

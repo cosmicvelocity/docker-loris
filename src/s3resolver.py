@@ -7,9 +7,10 @@ import hashlib
 import io
 import json
 import logging
+import os
+import tempfile
 import urllib
 import urlparse
-import os
 
 from loris_exception import LorisException
 from loris_exception import ResolverException
@@ -61,16 +62,17 @@ class CacheInfo:
         if not os.path.exists(path):
             raise CacheException(404)
 
-        cache_info = CacheInfo()
-
         with open(path, 'r') as f:
             j = json.load(f)
+
+        cache_info = CacheInfo()
 
         cache_info.ident = j.get(u'ident')
         cache_info.created_at = datetime.datetime.strptime(j.get(u'created_at'), '%Y-%m-%d %H:%M:%S')
 
         cache_info.src_img_fp = j.get(u'src_img_fp')
         cache_info.src_format = j.get(u'src_format')
+
         cache_info.content_type = j.get(u'content_type')
         cache_info.content_length = j.get(u'content_length')
 
@@ -79,30 +81,29 @@ class CacheInfo:
         except ValueError:
             cache_info.last_modified = None
 
-        f.close()
-
         return cache_info
 
     def save(self, path):
-        d = {}
+        dic = {}
 
-        d['ident'] = self.ident
-        d['created_at'] = self.created_at.strftime('%Y-%m-%d %H:%M:%S')
+        dic['ident'] = self.ident
+        dic['created_at'] = self.created_at.strftime('%Y-%m-%d %H:%M:%S')
 
-        d['src_img_fp'] = self.src_img_fp
-        d['src_format'] = self.src_format
+        dic['src_img_fp'] = self.src_img_fp
+        dic['src_format'] = self.src_format
 
-        d['content_type'] = self.content_type
-        d['content_length'] = self.content_length
+        dic['content_type'] = self.content_type
+        dic['content_length'] = self.content_length
 
         if self.last_modified is not None:
-            d['last_modified'] = self.last_modified.strftime('%Y-%m-%d %H:%M:%S')
+            dic['last_modified'] = self.last_modified.strftime('%Y-%m-%d %H:%M:%S')
         else:
-            d['last_modified'] = None
+            dic['last_modified'] = None
 
-        with open(path, 'w') as f:
-            f.write(json.dumps(d, indent = 4))
-            f.close()
+        with tempfile.NamedTemporaryFile(dir = os.path.dirname(path), delete = False) as tmp_file:
+            tmp_file.file.write(json.dumps(dic, indent = 4))
+
+            os.rename(tmp_file.name, path)
 
 
 """
@@ -113,16 +114,20 @@ class S3Resolver(_AbstractResolver):
     def __init__(self, config):
         super(S3Resolver, self).__init__(config)
 
-        self._cache_dir = self.config.get('cache_dir', '/tmp')
+        if 'cache_root' in self.config:
+            self._cache_root = self.config['cache_root']
+        else:
+            message = 'Server Side Error: Configuration incomplete and cannot resolve. Missing setting for cache_root.'
+            logger.error(message)
+            raise ResolverException(500, message)
+
         self._region_name = self.config.get('region_name', 'us-west-2')
         self._aws_access_key_id = self.config.get('aws_access_key_id', '')
         self._aws_secret_access_key = self.config.get('aws_secret_access_key', '')
         self._bucket_name = self.config.get('bucket_name', '')
 
-        logger.debug('cache_dir: %s' % (self._cache_dir))
+        logger.debug('cache_root: %s' % (self._cache_root))
         logger.debug('region_name: %s' % (self._region_name))
-        logger.debug('aws_access_key_id: %s' % (self._aws_access_key_id))
-        logger.debug('aws_secret_access_key: %s' % (self._aws_secret_access_key))
         logger.debug('bucket_name: %s' % (self._bucket_name))
 
         self._createdirs()
@@ -154,7 +159,7 @@ class S3Resolver(_AbstractResolver):
                 is_exists = True
             except botocore.exceptions.ClientError as e:
                 error_code = int(e.response['Error']['Code'])
-
+                
                 if error_code != 404:
                     raise
 
@@ -187,7 +192,14 @@ class S3Resolver(_AbstractResolver):
 
                 obj = self._bucket.Object(key)
                 obj.load()
-                obj.download_file(src_img_fp)
+
+                with tempfile.NamedTemporaryFile(dir = self._cache_root, delete = False) as tmp_file:
+                    obj.download_file(tmp_file.name)
+
+                if os.path.exists(src_img_fp):
+                    os.remove(tmp_file.name)
+                else:
+                    os.rename(tmp_file.name, src_img_fp)
 
                 cache_info = CacheInfo(ident, src_img_fp, obj)
                 cache_info.save(info_fp)
@@ -203,16 +215,16 @@ class S3Resolver(_AbstractResolver):
         return ImageInfo(app, uri, source_fp, format, extra)
 
     def _createdirs(self):
-        if not os.path.exists(self._cache_dir):
+        if not os.path.exists(self._cache_root):
             try:
-                os.makedirs(self._cache_dir, 0o700)
+                os.makedirs(self._cache_root, 0o700)
             except OSError as e:
                 if e.errno != errno.EEXIST:
-                    raise EnvironmentError("キャッシュディレクトリ (%s) が生成できませんでした。" % self._cache_dir)
+                    raise EnvironmentError("キャッシュディレクトリ (%s) が生成できませんでした。" % self._cache_root)
 
     def _get_key_from_file(self, key, suffix):
         # キーのハッシュからファイルパスを生成します。
-        return os.path.join(self._cache_dir, ''.join([
+        return os.path.join(self._cache_root, ''.join([
             hashlib.md5(key.encode('utf-8', 'strict')).hexdigest(),
             suffix
         ]))

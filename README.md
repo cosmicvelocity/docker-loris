@@ -16,9 +16,7 @@
 
     $ docker run --rm -p 5004:5004 cosmicvelocity/loris:latest
 
-起動後、ブラウザで下記にアクセスします。
-
-    http://[<Host or Container IP>]:5004/test.png/full/full/0/default.jpg
+起動後、ブラウザで `http://[<Host or Container IP>]:5004/test.png/full/full/0/default.jpg` にアクセスします。  
 
 ### コンテナ上の各ファイル・フォルダ
 - **/etc/loris2/loris2.conf**  
